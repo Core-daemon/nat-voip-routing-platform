@@ -1,22 +1,26 @@
 # NAT-Traversing Multi-Network VoIP Routing & SIP Media Interworking Platform
 
-### Engineering Research & Technical Implementation
+### Engineering Research, Network Architecture & Technical Implementation
 
 **Author:** Mohammad Sorower Jahan  
 **Role:** Lead VoIP & Network Infrastructure Engineer  
-**Specialisation:** VoIP, SIP, RTP, NAT Traversal, Linux, Virtualisation and Network Infrastructure
+**Specialisation:** VoIP, SIP, RTP, Linux, Virtualisation, Network Infrastructure and Telecommunications Engineering
 
 ---
 
 ## 1. Project Overview
 
-This project documents the architecture and engineering implementation of a multi-network VoIP routing and SIP media interworking platform.
+This repository documents the architecture and engineering implementation of a multi-network VoIP routing and SIP media interworking platform.
 
-The platform was designed to support SIP-based telecommunications infrastructure operating across multiple network environments, including systems separated by Network Address Translation (NAT), different IP subnets and restricted network connectivity.
+The platform was designed to establish telecommunications connectivity between otherwise isolated network environments.
 
-The engineering approach combines Linux-based telecommunications infrastructure, Asterisk PBX, virtualisation, IP routing and SIP/SDP media handling.
+The implementation integrated a VOS3000 Softswitch, an Asterisk telecommunications server, Linux-based virtualisation and an external landline SIP trunk infrastructure.
 
-The objective is to provide reliable communication between interconnected VoIP environments while addressing signalling, media routing and network accessibility challenges.
+Asterisk provided application-level SIP signalling and RTP media interworking between the internal Softswitch network and the telecommunications provider's network.
+
+The platform supported both inbound and outbound telecommunications calls.
+
+The engineering implementation addressed the challenge of establishing reliable SIP signalling and bidirectional voice communication across different network environments.
 
 ---
 
@@ -24,209 +28,370 @@ The objective is to provide reliable communication between interconnected VoIP e
 
 The principal engineering objectives were:
 
-- Enable SIP communication between interconnected network environments.
-- Address SIP signalling and RTP media challenges caused by NAT.
-- Support VoIP communication across different IP networks and routing domains.
-- Implement controlled routing between telecommunications infrastructure components.
-- Provide a Linux-based virtualised environment for telecommunications services.
-- Investigate and resolve SIP/SDP interoperability and RTP media connectivity issues.
-- Improve the reliability and maintainability of interconnected VoIP infrastructure.
+- Establish telecommunications connectivity between isolated network environments.
+- Integrate the VOS3000 Softswitch with Asterisk.
+- Establish SIP communication with an external telecommunications provider.
+- Support inbound and outbound landline calls.
+- Enable RTP media communication between the internal Softswitch and the external provider.
+- Address network routing and SIP/SDP media connectivity challenges.
+- Integrate Linux virtualisation, telecommunications services and multi-network infrastructure.
+- Establish appropriate network connectivity to the provider's separate SIP signalling and RTP media endpoints.
 
 ---
 
-## 3. Technology Stack
+## 3. Physical and Virtual Infrastructure
+
+The original implementation used one physical server running Proxmox VE.
+
+Two virtual machines were deployed within the Proxmox environment.
+
+### Virtual Machine 1: VOS3000 Softswitch
+
+| Parameter | Configuration |
+|-----------|---------------|
+| Virtualisation | Proxmox VE |
+| Operating system | CentOS 6.2, 64-bit Minimal |
+| Telecommunications application | VOS3000 |
+| Internal IP address | 10.10.10.10 |
+| Primary function | Softswitch and telecommunications call routing |
+
+The VOS3000 Softswitch operated within the internal telecommunications network.
+
+It communicated with the Asterisk server through a registration-based SIP gateway arrangement.
+
+### Virtual Machine 2: Asterisk Server
+
+| Parameter | Configuration |
+|-----------|---------------|
+| Virtualisation | Proxmox VE |
+| Operating system | CentOS 7, 64-bit Minimal |
+| Telecommunications application | Asterisk |
+| Internal network interface | ens18 |
+| Internal IP address | 10.10.10.11 |
+| External network interface | ens19 |
+| External connectivity | Provider SIP trunk LAN |
+| Primary function | SIP signalling and RTP media interworking |
+
+Asterisk operated as the intermediate telecommunications application between the internal Softswitch and the external provider.
+
+It used separate network interfaces to communicate with the two network environments.
+
+Both SIP signalling and RTP media passed through Asterisk.
+
+---
+
+## 4. Technology Stack
 
 | Technology | Engineering Application |
 |------------|-------------------------|
-| Proxmox VE | Virtualisation infrastructure |
-| Debian Linux | Server operating system |
-| CentOS Linux | Server operating system |
-| Asterisk 16 | VoIP signalling and media services |
-| SIP | Session initiation and call signalling |
-| SDP | Media negotiation and endpoint information |
+| Proxmox VE | Physical server virtualisation |
+| CentOS 6.2 | VOS3000 virtual machine operating system |
+| CentOS 7 | Asterisk virtual machine operating system |
+| VOS3000 | Softswitch and telecommunications call routing |
+| Asterisk | SIP signalling and RTP media interworking |
+| SIP | Telecommunications call signalling |
+| SDP | Media session negotiation |
 | RTP | Real-time voice media transport |
-| NAT | Private-to-public network address translation |
-| DMZ | Network accessibility and service isolation |
-| Static Routing | Controlled communication between network segments |
+| Static Routing | Connectivity between network environments |
+| NAT | Network address translation within the surrounding infrastructure |
+| DMZ | Network accessibility configuration |
+| Port Forwarding | Network connectivity configuration |
 | TCP/IP | Underlying network communication |
 
+The operating-system versions listed above describe the original implementation and are not recommendations for new production deployments.
+
 ---
 
-## 4. Platform Architecture
+## 5. Network Architecture
 
-The platform uses interconnected network environments containing Linux-based VoIP infrastructure.
+The implementation incorporated an internal Softswitch network and a separate telecommunications provider network.
 
-Asterisk provides SIP signalling and media interworking functions, while the underlying network configuration establishes connectivity between the relevant systems.
+The VOS3000 Softswitch communicated with the Asterisk server through the internal network.
 
-A conceptual representation of the platform is shown below.
+Asterisk used its second network interface to communicate with the external provider's SIP trunk infrastructure.
 
-```text
-        SIP Endpoint / External VoIP Network
-                       |
-                       |
-                SIP Signalling
-                       |
-                       v
-             +-------------------+
-             | External Network  |
-             | NAT / Firewall    |
-             +-------------------+
-                       |
-                       |
-                Controlled Routing
-                       |
-                       v
-             +-------------------+
-             | Linux VoIP Server |
-             |                   |
-             | Asterisk 16       |
-             | SIP / SDP / RTP   |
-             +-------------------+
-                       |
-                       |
-                Network Interworking
-                       |
-                       v
-             +-------------------+
-             | Internal Network  |
-             | NAT / DMZ         |
-             +-------------------+
-                       |
-                       |
-                       v
-             Internal SIP / VoIP Infrastructure
+The provider used separate endpoints for SIP signalling and RTP media.
+
+### 5.1 Logical Architecture Diagram
+
+```mermaid
+flowchart TB
+
+    subgraph HOST["PHYSICAL SERVER - PROXMOX VE"]
+
+        VOS["VM1: VOS3000 Softswitch<br/>CentOS 6.2<br/>10.10.10.10"]
+
+        subgraph ASTVM["VM2: ASTERISK SERVER - CentOS 7"]
+
+            ENS18["ens18<br/>Internal Network<br/>10.10.10.11"]
+
+            AST["ASTERISK<br/>SIP Signalling<br/>SDP Negotiation<br/>RTP Media Handling"]
+
+            ENS19["ens19<br/>Provider SIP Trunk LAN"]
+
+            ENS18 <--> AST
+
+            AST <--> ENS19
+
+        end
+
+        VOS <-->|"SIP and RTP"| ENS18
+
+    end
+
+    GW["Telecommunications Provider Gateway"]
+
+    SBC["Provider SBC<br/>SIP Signalling"]
+
+    MEDIA["Provider Media Endpoint<br/>RTP Media"]
+
+    PSTN["External Landline Network"]
+
+    ENS19 <--> GW
+
+    GW <-->|"SIP"| SBC
+
+    GW <-->|"RTP"| MEDIA
+
+    SBC <--> PSTN
+
+    MEDIA <--> PSTN
 ```
 
-This diagram illustrates the conceptual architecture rather than exposing production network addresses, routing tables or confidential infrastructure configurations.
+This diagram illustrates the logical architecture of the implementation.
+
+It does not reproduce the complete physical topology or confidential production network configuration.
 
 ---
 
-## 5. NAT Traversal and SIP Media Interworking
+## 6. SIP Gateway Integration
 
-One of the principal technical challenges addressed by the platform is maintaining SIP signalling and RTP media connectivity across different network boundaries.
+The VOS3000 Softswitch and Asterisk communicated through a registration-based SIP gateway arrangement.
 
-In NAT-based network environments, SIP signalling information and the media addresses negotiated through SDP may not correspond directly to the externally reachable network addresses.
+Asterisk provided the intermediate SIP application connecting the Softswitch to the external telecommunications provider.
 
-This can result in:
+The original implementation used the traditional Asterisk SIP configuration file:
 
-- SIP registration and signalling problems.
-- Failed call establishment.
-- One-way audio.
-- Missing RTP media.
-- Incorrect media destination addresses.
-- Communication failures between interconnected network segments.
+`sip.conf`
 
-The engineering approach involves examining SIP signalling, SDP media negotiation, network address translation and routing behaviour to identify and resolve connectivity problems.
+The Asterisk dialplan was configured using:
 
-Asterisk provides the telecommunications application layer, while Linux network configuration and the surrounding network infrastructure establish the required communication paths.
+`extensions.conf`
 
----
+These configuration components supported the relevant SIP endpoint handling and call-routing operations.
 
-## 6. Virtualised Infrastructure
-
-The platform incorporates Proxmox-based virtualisation to support Linux telecommunications servers.
-
-Virtualisation allows telecommunications services to operate within defined virtual environments while sharing the underlying physical infrastructure.
-
-The implementation incorporates Debian and CentOS Linux environments for telecommunications applications and supporting network services.
-
-The infrastructure design separates the virtual server environment from the network routing and telecommunications application layers.
+The exact historical registration parameters and authentication configurations are not included in this public repository.
 
 ---
 
-## 7. Engineering Responsibilities
+## 7. Bidirectional Call Routing
 
-My engineering responsibilities for this project included:
+The platform supported both outbound and inbound telecommunications calls.
 
-- Designing the multi-network VoIP infrastructure architecture.
-- Planning the Linux server and virtualisation environment.
-- Configuring and maintaining Asterisk-based telecommunications services.
-- Investigating SIP signalling and SDP media negotiation.
-- Troubleshooting RTP media connectivity across NAT boundaries.
-- Designing and configuring network connectivity between infrastructure components.
-- Investigating call establishment and media routing failures.
-- Testing and refining telecommunications infrastructure configurations.
+### 7.1 Outbound Calls
 
----
+The outbound call path was:
 
-## 8. Technical Challenges
+**VOS3000 → Asterisk → Provider SBC → Landline Network**
 
-### 8.1 SIP Signalling Across NAT
+```mermaid
+flowchart LR
 
-SIP-based communication can encounter connectivity problems when signalling traffic traverses network address translation boundaries.
+    VOS["VOS3000<br/>Softswitch"]
 
-The engineering work involved investigating the relationship between internal addresses, externally reachable addresses and SIP signalling behaviour.
+    AST["Asterisk<br/>SIP Interworking"]
 
-### 8.2 RTP Media Connectivity
+    SBC["Provider<br/>SBC"]
 
-Successful SIP call establishment does not necessarily guarantee successful voice transmission.
+    PSTN["Landline<br/>Network"]
 
-The platform required investigation of RTP traffic paths, negotiated media addresses and the network configuration between interconnected telecommunications systems.
+    VOS --> AST
 
-### 8.3 Multi-Network Routing
+    AST --> SBC
 
-The infrastructure incorporates different network environments requiring controlled communication between Linux telecommunications servers and VoIP endpoints.
+    SBC --> PSTN
+```
 
-Static routing and network configuration were used to establish the necessary connectivity between the relevant network segments.
+The VOS3000 Softswitch initiated the outbound call towards Asterisk.
 
-### 8.4 Telecommunications Infrastructure Integration
+Asterisk processed the incoming SIP request and established the corresponding outbound call towards the telecommunications provider.
 
-Combining Linux servers, Asterisk telecommunications services, virtualisation and network routing required coordination between several infrastructure layers.
+The provider handled the external landline connection.
 
-Troubleshooting therefore involved examining both application-level signalling and the underlying network communication paths.
+### 7.2 Inbound Calls
 
----
+The inbound call path was:
 
-## 9. Testing and Validation
+**Landline Network → Provider SBC → Asterisk → VOS3000**
 
-The engineering validation approach includes:
+```mermaid
+flowchart LR
 
-- Checking IP connectivity between the relevant network segments.
-- Verifying SIP signalling and call establishment.
-- Examining SDP media negotiation.
-- Confirming bidirectional RTP media connectivity.
-- Investigating one-way audio and missing-media scenarios.
-- Testing communication across NAT and routing boundaries.
-- Reviewing Linux network configuration and telecommunications service behaviour.
+    PSTN["Landline<br/>Network"]
 
----
+    SBC["Provider<br/>SBC"]
 
-## 10. Technical Documentation
+    AST["Asterisk<br/>SIP Interworking"]
 
-This repository is intended to provide a structured technical record of the platform's engineering architecture and implementation approach.
+    VOS["VOS3000<br/>Softswitch"]
 
-Additional documentation may include:
+    PSTN --> SBC
 
-- Detailed network architecture diagrams.
-- NAT traversal and routing explanations.
-- SIP signalling and SDP negotiation examples.
-- RTP media troubleshooting procedures.
-- Linux and Asterisk configuration examples.
-- Technical testing and validation procedures.
+    SBC --> AST
 
-Sensitive credentials, confidential production configurations, customer information and private network details are excluded from the public documentation.
+    AST --> VOS
+```
+
+The provider delivered the incoming call to Asterisk.
+
+Asterisk processed the SIP request and established the corresponding call towards the internal VOS3000 Softswitch.
 
 ---
 
-## 11. Engineering Significance
+## 8. RTP Media Interworking
 
-This project demonstrates practical engineering work across telecommunications infrastructure, network architecture, Linux systems and virtualisation.
+The external telecommunications provider used a separate media endpoint for RTP communication.
 
-It addresses the interaction between SIP signalling, SDP media negotiation, RTP traffic and network routing in interconnected VoIP environments.
+The implementation maintained Asterisk in the media path.
 
-The engineering work illustrates the application of telecommunications protocol knowledge to infrastructure design, technical integration and the resolution of network connectivity challenges.
+The internal Softswitch did not require direct RTP communication with the external provider's media endpoint.
+
+### RTP Media Architecture
+
+```mermaid
+flowchart LR
+
+    VOS["VOS3000<br/>Internal Softswitch"]
+
+    AST["Asterisk<br/>RTP Media Handling"]
+
+    MEDIA["Provider<br/>RTP Media Endpoint"]
+
+    VOS <-->|"Internal RTP"| AST
+
+    AST <-->|"External RTP"| MEDIA
+```
+
+Asterisk exchanged RTP media with the internal Softswitch and the external telecommunications provider.
+
+The implementation required appropriate SDP negotiation, network routing and media connectivity to establish the corresponding voice communication paths.
 
 ---
 
-## 12. Author
+## 9. Network Routing and Interworking
+
+The Asterisk server used separate network interfaces to communicate with the internal Softswitch and the external telecommunications provider.
+
+Static routing was configured to establish connectivity with the provider's SIP signalling and RTP media endpoints.
+
+The surrounding infrastructure also incorporated NAT, DMZ and port forwarding as part of the overall network connectivity arrangement.
+
+**Asterisk did not perform IP-level NAT between its internal and external network interfaces.**
+
+Instead, it operated as an application-level telecommunications intermediary, handling SIP signalling and RTP media between the two network environments.
+
+This distinction is important to understanding the engineering implementation.
+
+The platform established telecommunications communication between networks without requiring Asterisk to function as a conventional IP packet-forwarding NAT router.
+
+---
+
+## 10. Engineering Challenges
+
+### 10.1 Isolated Network Environments
+
+The internal Softswitch and external provider operated within separate network environments.
+
+The engineering implementation required an intermediate telecommunications application capable of communicating with both.
+
+### 10.2 SIP Signalling and RTP Connectivity
+
+The provider used separate endpoints for SIP signalling and RTP media.
+
+The implementation required appropriate network routing and media negotiation to establish connectivity with both destinations.
+
+### 10.3 Bidirectional Telecommunications
+
+The platform supported both inbound and outbound telecommunications traffic.
+
+The implementation required appropriate SIP endpoint handling and call-routing configuration for both directions.
+
+### 10.4 Virtualised Telecommunications Infrastructure
+
+The engineering work integrated VOS3000, Asterisk, Linux operating systems, Proxmox virtualisation and network infrastructure.
+
+The implementation required coordination between telecommunications application configuration and the underlying network connectivity.
+
+---
+
+## 11. Engineering Implementation
+
+My engineering work on this platform included:
+
+- Designing the multi-network telecommunications architecture.
+- Deploying the virtualised Linux server environment.
+- Integrating VOS3000 and Asterisk.
+- Configuring the internal and provider-facing network interfaces.
+- Establishing connectivity between the isolated telecommunications environments.
+- Configuring SIP gateway integration.
+- Implementing inbound and outbound call-routing logic.
+- Configuring connectivity to the provider's signalling and media infrastructure.
+- Investigating SIP signalling, SDP negotiation and RTP media connectivity.
+- Testing and refining the telecommunications implementation.
+
+The platform provided bidirectional telecommunications connectivity between the internal Softswitch and the external landline infrastructure.
+
+---
+
+## 12. Technical Documentation
+
+Detailed technical documentation is available in the following files.
+
+| Document | Description |
+|----------|-------------|
+| [Technical Architecture](docs/architecture.md) | Physical infrastructure, virtual machines, logical network architecture and SIP/RTP media interworking. |
+| [Network Routing](docs/network-routing.md) | Network interfaces, static routing, signalling and media connectivity, and bidirectional telecommunications. |
+| [SIP Gateway Configuration](docs/sip-gateway-configuration.md) | VOS3000 and Asterisk integration, registration-based SIP gateway connectivity and inbound/outbound call processing. |
+
+These documents provide additional information about the architecture and engineering methodology used in the implementation.
+
+---
+
+## 13. Documentation and Confidentiality
+
+This repository documents historical engineering work.
+
+It does not contain a complete production deployment or the original confidential telecommunications configuration.
+
+Provider authentication credentials, customer information, sensitive infrastructure configurations and confidential production details are intentionally excluded.
+
+Any future demonstration configurations will be identified as illustrative or reconstructed examples unless their historical origin can be verified.
+
+The publication date of this repository should not be interpreted as the original implementation date of the engineering project.
+
+---
+
+## 14. Engineering Contribution
+
+The project documents the design and implementation of a telecommunications platform connecting otherwise isolated network environments.
+
+The implementation integrated a virtualised VOS3000 Softswitch, an Asterisk telecommunications server, multi-network routing and SIP/RTP media interworking.
+
+The architecture supported inbound and outbound telecommunications communication between an internal Softswitch environment and an external landline SIP trunk provider.
+
+The engineering work demonstrates the integration of telecommunications protocols, Linux infrastructure, virtualisation and network engineering to address practical communication challenges.
+
+---
+
+## 15. Author
 
 **Mohammad Sorower Jahan**
 
 Digital Technology & Telecommunications Infrastructure Engineer
 
-**Areas of expertise:**
+**Technical Expertise:**
 
-VoIP | SIP | SDP | RTP | Asterisk | Linux | Proxmox | NAT Traversal | Network Infrastructure | Virtualisation
+VoIP | SIP | SDP | RTP | Asterisk | VOS3000 | Linux | Proxmox | Network Infrastructure | Virtualisation
 
 **GitHub:** [Core-daemon](https://github.com/Core-daemon)
 
@@ -234,4 +399,4 @@ VoIP | SIP | SDP | RTP | Asterisk | Linux | Proxmox | NAT Traversal | Network In
 
 ---
 
-*This repository contains technical documentation of engineering work. Published documentation and any future demonstration configurations are intended to illustrate the architecture and implementation approach without disclosing confidential production infrastructure.*
+*This repository provides technical documentation of an engineering implementation. It excludes confidential production configurations, authentication credentials and customer information.*
