@@ -343,21 +343,42 @@ The platform provided bidirectional telecommunications connectivity between the 
 
 ---
 
+
 ## 12. Technical Documentation
 
-Detailed technical documentation is available in the following files.
+Detailed technical documentation and evidence are available in the following files.
 
 | Document | Description |
 |----------|-------------|
-| [Technical Architecture](docs/architecture.md) | Physical infrastructure, virtual machines, logical network architecture and SIP/RTP media interworking. |
-| [Network Routing](docs/network-routing.md) | Network interfaces, static routing, signalling and media connectivity, and bidirectional telecommunications. |
-| [SIP Gateway Configuration](docs/sip-gateway-configuration.md) | VOS3000 and Asterisk integration, registration-based SIP gateway connectivity and inbound/outbound call processing. |
+| [Technical Architecture](docs/architecture.md) | Physical infrastructure, virtual machines, logical network architecture and SIP/RTP interworking. |
+| [Network Routing](docs/network-routing.md) | Dual network interfaces, provider static routing, SIP signalling and media connectivity. |
+| [SIP Gateway Configuration](docs/sip-gateway-configuration.md) | VOS3000 and Asterisk integration, SIP gateway configuration and bidirectional call processing. |
+| [Project Evidence](docs/project-evidence.md) | Historical 2025 R&D project background, engineering contribution and evidence boundaries. |
+| [Verified Technical Evidence](docs/verified-technical-evidence.md) | Technical facts directly verified from the retained Proxmox, VOS3000 and Asterisk environment in September 2026. |
 
-These documents provide additional information about the architecture and engineering methodology used in the implementation.
-
+The verified technical evidence is intentionally separated from the historical project narrative so that current server inspection results are not represented as contemporaneous 2025 records.
 ---
+## 13. Current Server Verification
 
-## 13. Documentation and Confidentiality
+A technical inspection of the retained server environment was carried out in September 2026.
+
+The inspection directly verified:
+
+- VOS3000-associated Softswitch processes on CentOS 6.2.
+- Asterisk 16.23.0 running on CentOS 7.9.2009.
+- Internal and provider-facing network interfaces.
+- Static routes to separate provider signalling and media destinations.
+- SIP peer and dialplan configuration.
+- Asterisk RTP configuration.
+- Historical SIP activity involving the configured provider SBC.
+- 2,321,693 retained Asterisk CDR records covering 28 April 2026 to 16 June 2026.
+
+Of those retained CDR records, 400,837 have an `ANSWERED` disposition.
+
+CDR records are not represented as necessarily corresponding one-to-one with unique telephone calls.
+
+The server inspection verifies the retained technical implementation. Separate documentary evidence is required to establish the historical 2025 project date, client relationship and individual engineering contribution.
+## 14. Documentation and Confidentiality
 
 This repository documents historical engineering work.
 
@@ -371,7 +392,7 @@ The publication date of this repository should not be interpreted as the origina
 
 ---
 
-## 14. Engineering Contribution
+## 15. Engineering Contribution
 
 The project documents the design and implementation of a telecommunications platform connecting otherwise isolated network environments.
 
@@ -383,7 +404,7 @@ The engineering work demonstrates the integration of telecommunications protocol
 
 ---
 
-## 15. Author
+## 16. Author
 
 **Mohammad Sorower Jahan**
 
